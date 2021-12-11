@@ -34,23 +34,14 @@ public class BSTMountain {
             return right == null && left == null;
         }
 
-        /** The height difference between the right and left subtrees.
-         * Used to determine whether the node should be rebalanced through
-         * AVL rotations.
-         *
-         * @return the balance of the node
+        /** Updates the height of this node using the children's heights
          */
-        public int balanceFactor() {
-            if (right == null && left == null)
-                // Empty subtrees are treated as having height equal to 0
-                return 0;
-            else if (right == null)
-                return -left.height;
-            else if (left == null)
-                return right.height;
-            else
-                return right.height - left.height;
+        public void updateHeight() {
+            int rightHeight = right == null ? 0 : right.height;
+            int leftHeight = left == null ? 0 : left.height;
+            height = ((rightHeight > leftHeight) ? rightHeight : leftHeight) + 1;
         }
+
     }
 
     private Node root;
@@ -64,8 +55,8 @@ public class BSTMountain {
      *
      * @param restStop RestStop to insert
      */
-    public void addRestStop(RestStop r) {
-        root = addRestStop(root, r);
+    public void add(RestStop r) {
+        root = add(root, r);
     }
 
     /** Private helper for adding rest stops while accounting for any
@@ -74,7 +65,7 @@ public class BSTMountain {
      * all changes within start and its subtrees and return a reference to
      * the node adopting the position formerly held by `start`
      */
-    private Node addRestStop(Node start, RestStop r) {
+    private Node add(Node start, RestStop r) {
         // Base case, `start` was an empty subtree, return a ref to the new node
         if (start == null)
             return new Node(r);
@@ -86,10 +77,12 @@ public class BSTMountain {
         if (comparison == 0) {
             return start;
         } else if (comparison > 0) {
-            start.right = addRestStop(start.right, r);
+            start.right = add(start.right, r);
+            start.updateHeight();
             return start;
         } else {
-            start.left = addRestStop(start.left, r);
+            start.left = add(start.left, r);
+            start.updateHeight();
             return start;
         }
 
@@ -97,18 +90,13 @@ public class BSTMountain {
 
 
     /** Traverses the tree to find paths to the bottom of the mountain
-     *
-     * @param hiker the hiker descending this mountain
-     * @throws NullPointerException if hiker is null
      */
-    public void findSolutions(Hiker hiker) throws NullPointerException {
+    public void findSolutions(){
         if (root == null) {
             // If there are no rest stops, there are no solutions
             return;
         }
-        if (hiker == null) {
-            throw new NullPointerException("Error: findSolutions should not be called with a null Hiker reference.");
-        }
+        Hiker hiker = new Hiker();
         findSolutions(root, hiker);
     }
 
@@ -119,9 +107,7 @@ public class BSTMountain {
     private void findSolutions(Node start, Hiker hiker) {
         boolean success = hiker.attemptToVisit(start.restStop);
         if (!success) {
-            // Always backtrack before returning to the calling function
-            // Otherwise the hiker will have fewer supplies then they should
-            hiker.backtrack();
+            // Backtracking occurs in the attemptToVisit method in the event of failure
             return;
         }
         if (start.isLeaf()) {
@@ -130,14 +116,19 @@ public class BSTMountain {
                 // so we don't have a cliff
                 printSolution(hiker.getVisitedStops());
             }
+            // Ensure the hiker has all the supplies it should have
             hiker.backtrack();
             return;
         }
 
         // Call left before right to prioritize solutions on the left side of
         // the mountain
-        findSolutions(start.left, hiker);
-        findSolutions(start.right, hiker);
+        if (start.left != null)
+            findSolutions(start.left, hiker);
+        if (start.right != null)
+            findSolutions(start.right, hiker);
+
+        hiker.backtrack();
     }
 
     /** Helper function to print a solution once it's been found

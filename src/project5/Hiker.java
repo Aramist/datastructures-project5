@@ -19,7 +19,9 @@ public class Hiker {
     private ArrayList<RestStop> visitedStops;
 
     public Hiker() {
-        foodCount = 0;
+        // Start with one food because my algorithm treats entering the root node
+        // as a complete step in the hiker's descent
+        foodCount = 1;
         axeCount = 0;
         raftCount = 0;
         visitedStops = new ArrayList<>();
@@ -37,10 +39,13 @@ public class Hiker {
             switch (s) {
                 case FOOD:
                 foodCount++;
+                break;
                 case AXE:
                 axeCount++;
+                break;
                 case RAFT:
                 raftCount++;
+                break;
             }
         }
 
@@ -48,8 +53,10 @@ public class Hiker {
             switch (o) {
                 case RIVER:
                 raftCount--;
+                break;
                 case FALLEN_TREE:
                 axeCount--;
+                break;
             }
         }
     }
@@ -89,10 +96,13 @@ public class Hiker {
             switch (s) {
                 case FOOD:
                 foodCount--;
+                break;
                 case AXE:
                 axeCount--;
+                break;
                 case RAFT:
                 raftCount--;
+                break;
             }
         }
 
@@ -100,8 +110,10 @@ public class Hiker {
             switch (o) {
                 case RIVER:
                 raftCount++;
+                break;
                 case FALLEN_TREE:
                 axeCount++;
+                break;
             }
         }
     }
